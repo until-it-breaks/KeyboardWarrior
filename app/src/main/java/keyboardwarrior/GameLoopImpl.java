@@ -1,9 +1,14 @@
 package keyboardwarrior;
 
+
+// Note to self: this implementation is highly accurate but causes busy waiting.
+// The alternative is using Thread.sleep() but it has proven to be highly inaccurate past 60 fps.
+// There could be room for a switch between the two?
 public class GameLoopImpl implements GameLoop{
 
-    public static final int TARGET_FPS = 15;
-    private static final long PERIOD = 1_000 / TARGET_FPS;
+    public static final int TARGET_FPS = 100;
+    private static final long SECOND_IN_NANOS = 1_000_000_000;
+    private static final long PERIOD = SECOND_IN_NANOS / TARGET_FPS;
     private boolean hasToRun;
     private long lastElapsedTime;
 
@@ -14,20 +19,20 @@ public class GameLoopImpl implements GameLoop{
 
     @Override
     public void start() {
-        long lastTime = System.currentTimeMillis();
+        long lastTime = System.nanoTime();
         while (hasToRun) {
-            final long currentTime = System.currentTimeMillis();
+            final long currentTime = System.nanoTime();
             final long elapsedTime = currentTime - lastTime;
-            if (elapsedTime > 0) {
-                this.lastElapsedTime = elapsedTime;
-                System.out.println("Elapsed Time: " + this.getLastElapsedTime() + " ms");
-                System.out.printf("FPS: %.1f%n", this.getFrameRate());
-            }
+            lastTime = currentTime;
+            this.lastElapsedTime = elapsedTime;
+
+            System.out.println("Elapsed Time: " + this.getLastElapsedTime() + " ns");
+            System.out.printf("FPS: %.3f%n", this.getFrameRate());
+
             processInput();
             update(elapsedTime);
             render();
             waitForSync(lastTime);
-            lastTime = currentTime;
         }
     }
 
@@ -42,8 +47,8 @@ public class GameLoopImpl implements GameLoop{
     }
 
     @Override
-    public float getFrameRate() {
-        return 1000f / lastElapsedTime;
+    public double getFrameRate() {
+        return (double) SECOND_IN_NANOS / lastElapsedTime;
     }
     
     private void processInput() {
@@ -59,19 +64,9 @@ public class GameLoopImpl implements GameLoop{
     }
 
     private void waitForSync(final long lastTime) {
-        final long delta = System.currentTimeMillis() - lastTime;
-        if (delta < PERIOD) {
-            try {
-                Thread.sleep(PERIOD - delta);
-            } catch (final InterruptedException e) {
-                e.printStackTrace();
-            }
+        long delta = System.nanoTime() - lastTime;
+        while (delta < PERIOD) {
+            delta = System.nanoTime() - lastTime;
         }
-    }
-
-    public static void main(final String[] args) {
-        final GameLoop gameLoop = new GameLoopImpl();
-        final Thread gameLoopThread = new Thread(() -> gameLoop.start());
-        gameLoopThread.start();
     }
 }

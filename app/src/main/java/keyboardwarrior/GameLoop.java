@@ -8,5 +8,5 @@ public interface GameLoop {
 
     long getLastElapsedTime();
 
-    float getFrameRate();
+    double getFrameRate();
 }
