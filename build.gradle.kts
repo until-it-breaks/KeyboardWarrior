@@ -7,8 +7,8 @@
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
+    java
     application
-
     id("com.gradleup.shadow") version "8.3.3"
 }
 
@@ -17,11 +17,26 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    // Use JUnit Jupiter for testing.
-    testImplementation(libs.junit.jupiter)
+val javaFXModules = listOf(
+    "base",
+    "controls",
+    "fxml",
+    "swing",
+    "graphics"
+)
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+val supportedPlatforms = listOf("win")
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation("org.slf4j:slf4j-api:2.0.16")
+
+    val javaFxVersion = 23
+    for (platform in supportedPlatforms) {
+        for (module in javaFXModules) {
+            implementation("org.openjfx:javafx-$module:$javaFxVersion:$platform")
+        }
+    }
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -31,12 +46,9 @@ java {
     }
 }
 
-application {
-    // Define the main class for the application.
-    mainClass = "keyboardwarrior.App"
-}
+val main: String by project
 
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+application {
+    // Define the main class for the application
+    mainClass.set(main)
 }

@@ -1,10 +1,10 @@
-package keyboardwarrior;
+package com.keyboardwarrior;
 
 
 // Note to self: this implementation is highly accurate but causes busy waiting.
 // The alternative is using Thread.sleep() but it has proven to be highly inaccurate past 60 fps.
 // There could be room for a switch between the two?
-public class GameLoopImpl implements GameLoop{
+public class GameLoopImpl implements GameLoop {
 
     public static final int TARGET_FPS = 100;
     private static final long SECOND_IN_NANOS = 1_000_000_000;

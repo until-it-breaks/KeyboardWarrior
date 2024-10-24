@@ -1,4 +1,4 @@
-package keyboardwarrior;
+package com.keyboardwarrior;
 
 public interface GameLoop {
     
